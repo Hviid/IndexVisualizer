@@ -13,7 +13,7 @@ export class AppComponent {
 
     AddIndexes() {
         var indexes:Index[] = [];
-        var patt = /CREATE (?:NON)?CLUSTERED INDEX (\w+)\s*ON [\w|\.]+ \(([\w|\,|\s]+)\)\s* (?:INCLUDE \(([\w|\,|\s]+)\))?/ig;
+        var patt = /CREATE (?:NON)?CLUSTERED INDEX ([\w|\[|\]]+)\s*ON [\w|\.|\[|\]]+\s*\(([\w|\,|\s|\[|\]]+)\)\s*(?:INCLUDE \(([\w|\,|\s|\[|\]]+)\))?/ig;
         indexes = this.getMatches(this.indexesStr, patt);
 
         //Get all cols
@@ -60,7 +60,7 @@ export class AppComponent {
             var keys = match[2];
             var includes = match[3];
             if (keys)
-                index.keys = keys.split(",");
+                index.keys = keys.split(",").map((value, index, all) => value.replace(" ASC", "").replace(" DESC", "").trim());
             if (includes)
                 index.includes = includes.split(",");
             
