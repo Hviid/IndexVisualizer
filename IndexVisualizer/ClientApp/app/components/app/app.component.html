@@ -1,20 +1,105 @@
 <div class='container-fluid'>
-    <div class='row'>
-        <div class='col-sm-9 body-content'>
-
-            <table>
-                <tr *ngFor="let row of table">
-                    <td style="border: solid black 1px; padding: 10px;">{{ row.name }}</td>
-                    <td *ngFor="let col of row.cols" style="border: solid black 1px; padding: 10px;" [ngStyle]="col.style">{{ col.name }}</td>
-                </tr>
-            </table>
-
+    <div class='row' *ngFor="let table of tables" style="padding: 10px 0px;">
+        <table>
+            <tr>
+                <td [attr.colspan]="table.colNames.length + table.statCols.length + 1" style="border: solid black 1px; padding: 10px;">{{table.name}}</td>
+            </tr>
+            <tr>
+                <td style="border: solid black 1px; padding: 10px;">Index name</td>
+                <td *ngFor="let statCol of table.statCols" style="border: solid black 1px; padding: 10px;">{{ statCol }}</td>
+                <td [attr.colspan]="table.colNames.length" style="border: solid black 1px; padding: 10px;">Columns</td>
+            </tr>
+            <tr *ngFor="let row of table.rows">
+                <td style="border: solid black 1px; padding: 10px;">{{ row.name }}</td>
+                <td *ngFor="let statCol of table.statCols" style="border: solid black 1px; padding: 10px;">{{ row.indexStats[statCol] }}</td>
+                <td *ngFor="let colName of table.colNames" style="border: solid black 1px; padding: 10px;" [ngStyle]="row.colStyle[colName]">{{ colName }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="row">
+        <button (click)="AddIndexes()">Add indexes</button>
+        <button (click)="AddIndexStats()">Add index stats</button>
+        <button (click)="AddMissingIndexes()">Add missing indexes</button>
+        <button (click)="Reset()">Reset</button>
+    </div>
+    <div class="row">
+        <div style="display: inline-block;">
+            <p>Insert query result</p>
+            <textarea style="width:600px; height:500px;" [(ngModel)]="indexesStr"></textarea>
         </div>
-    </div>
-    <div class="row">
-        <button (click)="AddIndexes()">Tilføj hold</button>
-    </div>
-    <div class="row">
-        <textarea style="width:600px; height:400px;" [(ngModel)]="indexesStr"></textarea>
+        <div style="display: inline-block;">
+            <p>Get indexes</p>
+            <textarea style="width:400px; height:500px; resize: none;" contenteditable="false">
+SELECT
+    OBJECT_NAME(ic.object_id) AS table_name,
+    i.name AS index_name,
+    COL_NAME(ic.object_id, ic.column_id) AS column_name,
+    i.[fill_factor],
+    ic.is_included_column
+FROM sys.indexes AS i
+INNER JOIN sys.index_columns AS ic
+    ON i.object_id = ic.object_id
+    AND i.index_id = ic.index_id
+WHERE i.object_id NOT IN (SELECT
+    [object_id]
+FROM [frapp_ma].[sys].[objects]
+WHERE [is_ms_shipped] = 1)
+AND type_desc <> 'HEAP'
+            </textarea>
+        </div>
+        <div style="display: inline-block;">
+            <p>Get index stats</p>
+            <textarea style="width:400px; height:500px; resize: none;" contenteditable="false">
+SELECT 
+	   (SELECT OBJECT_NAME([object_id], [database_id])) as table_name
+	  ,(SELECT TOP 1 name from sys.indexes WHERE sys.indexes.index_id = [sys].[dm_db_index_usage_stats].[index_id] and sys.indexes.object_id = [sys].[dm_db_index_usage_stats].[object_id]) as index_name
+	  ,(SELECT DB_NAME([database_id])) as dbname
+      ,[user_seeks]
+      ,[user_scans]
+      ,[user_lookups]
+      ,[user_updates]
+      ,[last_user_seek]
+      ,[last_user_scan]
+      ,[last_user_lookup]
+      ,[last_user_update]
+      ,[system_seeks]
+      ,[system_scans]
+      ,[system_lookups]
+      ,[system_updates]
+      ,[last_system_seek]
+      ,[last_system_scan]
+      ,[last_system_lookup]
+      ,[last_system_update]
+  FROM [sys].[dm_db_index_usage_stats] where database_id = DB_ID()
+            </textarea>
+        </div>
+        <div style="display: inline-block;">
+            <p>Get missing indexes</p>
+            <textarea style="width:400px; height:500px; resize: none;" contenteditable="false">
+SELECT 
+	  (SELECT OBJECT_NAME([sys].[dm_db_missing_index_details].object_id, [sys].[dm_db_missing_index_details].database_id)) as table_name
+	  ,[sys].[dm_db_missing_index_details].equality_columns
+	  ,[sys].[dm_db_missing_index_details].inequality_columns
+	  ,[sys].[dm_db_missing_index_details].included_columns
+      ,[user_seeks]
+      ,[user_scans]
+	  ,[last_user_seek]
+      ,[last_user_scan]
+      ,[avg_total_user_cost]
+      ,[avg_user_impact]
+      ,[system_seeks]
+      ,[system_scans]
+      ,[last_system_seek]
+      ,[last_system_scan]
+      ,[avg_total_system_cost]
+      ,[avg_system_impact]
+  FROM [sys].[dm_db_missing_index_group_stats]
+  INNER JOIN [sys].[dm_db_missing_index_groups]
+  ON [sys].[dm_db_missing_index_group_stats].group_handle = [sys].[dm_db_missing_index_groups].index_group_handle
+  INNER JOIN [sys].[dm_db_missing_index_details]
+  ON [sys].[dm_db_missing_index_groups].index_handle = [sys].[dm_db_missing_index_details].index_handle
+  WHERE [sys].[dm_db_missing_index_details].database_id = DB_ID()
+            </textarea>
+        </div>
     </div>
 </div>
