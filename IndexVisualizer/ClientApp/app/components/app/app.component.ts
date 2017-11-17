@@ -171,9 +171,9 @@ export class AppComponent {
         var indexesStats: MissingIndex[] = [];
         var match;
         while (match = regex.exec(string)) {
-            let equality_columns = match[2].replace("[", "").replace("]", "").split(",").map((str, index, all) => str.trim());
-            let inequality_columns = match[3].replace("[", "").replace("]", "").split(",");
-            let included_columns = match[4].replace("[", "").replace("]", "").split(",");
+            let equality_columns = match[2].split(",").filter((str, index, all) => str !== "NULL").map((str, index, all) => str.replace("[", "").replace("]", "").trim());
+            let inequality_columns = match[3].split(",").filter((str, index, all) => str !== "NULL").map((str, index, all) => str.replace("[", "").replace("]", "").trim());
+            let included_columns = match[4].split(",").filter((str, index, all) => str !== "NULL").map((str, index, all) => str.replace("[", "").replace("]", "").trim());
             let index = new MissingIndex(match[1], equality_columns, inequality_columns, included_columns, match[5], match[6], new Date(match[7]), new Date(match[8]), match[9], match[10], match[11], match[12], new Date(match[13]), new Date(match[14]), match[15], match[16]);
             indexesStats.push(index);
         }

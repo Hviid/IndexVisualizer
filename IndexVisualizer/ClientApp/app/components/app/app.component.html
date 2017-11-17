@@ -2,17 +2,17 @@
     <div class='row' *ngFor="let table of tables" style="padding: 10px 0px;">
         <table>
             <tr>
-                <td [attr.colspan]="table.colNames.length + table.statCols.length + 1" style="border: solid black 1px; padding: 10px;">{{table.name}}</td>
+                <td [attr.colspan]="table.colNames.length + table.statCols.length + 1">{{table.name}}</td>
             </tr>
             <tr>
-                <td style="border: solid black 1px; padding: 10px;">Index name</td>
-                <td *ngFor="let statCol of table.statCols" style="border: solid black 1px; padding: 10px;">{{ statCol }}</td>
-                <td [attr.colspan]="table.colNames.length" style="border: solid black 1px; padding: 10px;">Columns</td>
+                <td>Index name</td>
+                <td *ngFor="let statCol of table.statCols">{{ statCol }}</td>
+                <td [attr.colspan]="table.colNames.length">Columns</td>
             </tr>
             <tr *ngFor="let row of table.rows">
-                <td style="border: solid black 1px; padding: 10px;">{{ row.name }}</td>
-                <td *ngFor="let statCol of table.statCols" style="border: solid black 1px; padding: 10px;">{{ row.indexStats[statCol] }}</td>
-                <td *ngFor="let colName of table.colNames" style="border: solid black 1px; padding: 10px;" [ngStyle]="row.colStyle[colName]">{{ colName }}</td>
+                <td>{{ row.name }}</td>
+                <td *ngFor="let statCol of table.statCols">{{ row.indexStats[statCol] }}</td>
+                <td *ngFor="let colName of table.colNames" [ngStyle]="row.colStyle[colName]">{{ colName }}</td>
             </tr>
         </table>
     </div>
